@@ -1,0 +1,106 @@
+apply plugin: 'com.android.library'
+apply plugin: "com.jfrog.bintray"
+apply plugin: 'com.github.dcendents.android-maven'
+version = "1.0.2"
+android {
+    compileSdkVersion 28
+    buildToolsVersion "28.0.3"
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 27
+        versionCode 3
+        versionName version
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    // OkHttp
+    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+
+}
+
+//===================================upload jcenter=================================================
+def siteUrl = 'https://github.com/yqshi/xbums'
+def gitUrl = 'https://github.com/yqshi/xbums.git'
+group = "com.yqshi.xbums"
+
+install {
+    repositories.mavenInstaller {
+        pom {
+            project {
+                packaging 'aar'
+
+                // Add your description here
+                name 'XBUms'
+                description = 'lyx statics sdk'
+                url siteUrl
+
+                // Set your license
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'yqshi'
+                        name 'yqshi'
+                        email '939432817yqshi@gmail.com'
+                    }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+
+                }
+            }
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+
+    configurations = ['archives']
+    pkg {
+        repo = "maven"
+        name = "XBUms"
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        licenses = ["Apache-2.0"]
+        publish = true
+//        version {
+//            gpg {
+//                passphrase = properties.getProperty("bintray.gpg.password")
+//            }
+//        }
+    }
+}
