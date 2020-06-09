@@ -412,7 +412,6 @@ class CommonUtil {
      * @throws ParseException
      */
     static String generateSession(Context context) {
-
         String sessionId = "";
         String str = DeviceInfo.getDeviceId();
 

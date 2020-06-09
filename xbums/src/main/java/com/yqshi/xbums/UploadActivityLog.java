@@ -1,4 +1,4 @@
-/**
+/***
  * LYX Statics SDK FOR Android
  * <p>
  * An open source analytics android sdk for mobile applications
@@ -19,24 +19,28 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
+
 class UploadActivityLog extends Thread {
-    public Context context;
+
+    public WeakReference<Context> contextWR;
 
     public UploadActivityLog(Context context) {
         super();
-        this.context = context;
+        contextWR = new WeakReference<>(context);
+        context = null;
     }
 
     @Override
     public void run() {
-        String cachfileactivity = context.getCacheDir().getAbsolutePath()
+        String cachfileactivity = contextWR.get().getCacheDir().getAbsolutePath()
                 + "/cobub.cache" + "activityInfo";
         postactivityinfo(cachfileactivity);
     }
 
     private void postactivityinfo(String cachfileactivity) {
         // 首先判断是否能发送，如果不能发送就没必要读文件了
-        if (!CommonUtil.isNetworkAvailable(context)) {
+        if (!CommonUtil.isNetworkAvailable(contextWR.get())) {
             return;
         }
         // 可以发送，读文件
@@ -62,9 +66,9 @@ class UploadActivityLog extends Thread {
             String postdata = jsonarr.toString();
 
             // 发送之前再度判断
-            if (CommonUtil.isNetworkAvailable(context)) {
+            if (CommonUtil.isNetworkAvailable(contextWR.get())) {
                 CobubLog.i(UmsConstants.LOG_TAG, UploadActivityLog.class, "post activity info");
-                NetworkUtil.Post(CommonUtil.assemParamsUrl(context, UmsConstants.BASE_URL), postdata, new OnDataCallBack() {
+                NetworkUtil.Post(CommonUtil.assemParamsUrl(contextWR.get(), UmsConstants.BASE_URL), postdata, new OnDataCallBack() {
                     @Override
                     public void onSuccess(MyMessage response) {
 
@@ -76,7 +80,7 @@ class UploadActivityLog extends Thread {
                         for (int i = 0; i < jsonarr.length(); i++) {
                             try {
                                 CommonUtil.saveInfoToFile("activityInfo",
-                                        jsonarr.getJSONObject(i), context);
+                                        jsonarr.getJSONObject(i), contextWR.get());
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -88,7 +92,7 @@ class UploadActivityLog extends Thread {
             } else {
                 for (int i = 0; i < jsonarr.length(); i++) {
                     CommonUtil.saveInfoToFile("activityInfo",
-                            jsonarr.getJSONObject(i), context);
+                            jsonarr.getJSONObject(i), contextWR.get());
                 }
 
             }

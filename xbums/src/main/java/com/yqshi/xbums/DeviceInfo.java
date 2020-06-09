@@ -108,6 +108,14 @@ class DeviceInfo {
         return "";
     }
 
+    /**
+     * 获取手机的密度
+     */
+    public static float getDensity() {
+        DisplayMetrics dm = context.getResources().getDisplayMetrics();
+        return dm.density;
+    }
+
     public static String getResolution() {
         DisplayMetrics displaysMetrics = new DisplayMetrics();
         WindowManager wm = (WindowManager) context
@@ -116,6 +124,22 @@ class DeviceInfo {
         CobubLog.i(UmsConstants.LOG_TAG, DeviceInfo.class, "getResolution()=" + displaysMetrics.widthPixels + "x"
                 + displaysMetrics.heightPixels);
         return displaysMetrics.widthPixels + "x" + displaysMetrics.heightPixels;
+    }
+
+    public static String getHeightPix() {
+        DisplayMetrics displaysMetrics = new DisplayMetrics();
+        WindowManager wm = (WindowManager) context
+                .getSystemService(Context.WINDOW_SERVICE);
+        wm.getDefaultDisplay().getMetrics(displaysMetrics);
+        return String.valueOf(displaysMetrics.heightPixels);
+    }
+
+    public static String getWidthPix() {
+        DisplayMetrics displaysMetrics = new DisplayMetrics();
+        WindowManager wm = (WindowManager) context
+                .getSystemService(Context.WINDOW_SERVICE);
+        wm.getDefaultDisplay().getMetrics(displaysMetrics);
+        return String.valueOf(displaysMetrics.widthPixels);
     }
 
     public static String getDeviceProduct() {
@@ -434,14 +458,24 @@ class DeviceInfo {
     }
 
     public static String getMCCMNCName() {
-        String result;
+        String result = "";
         try {
 
-            String operator = telephonyManager.getNetworkOperatorName();
-            if (operator == null)
+            String operator = telephonyManager.getNetworkOperator();
+            if (operator == null) {
                 result = "";
-            else
-                result = operator;
+            } else {
+                switch (operator) {
+                    case "46000":
+                    case "46002":
+                    case "46007":
+                        return "中国移动";
+                    case "46001":
+                        return "中国联通";
+                    case "46003":
+                        return "中国电信";
+                }
+            }
         } catch (Exception e) {
             result = "";
             CobubLog.e(UmsConstants.LOG_TAG, DeviceInfo.class, e.toString());

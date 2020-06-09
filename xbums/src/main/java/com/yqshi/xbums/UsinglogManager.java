@@ -18,34 +18,33 @@ import com.yqshi.xbums.constants.UmsConstants;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.ref.WeakReference;
-
 class UsinglogManager {
-    private static WeakReference<Context> contextWR;
     private String session_id = "";
 
     public UsinglogManager(Context context) {
-        contextWR = new WeakReference<Context>(context);
 
     }
 
-    JSONObject prepareUsinglogJSON(String start_millis, String end_millis,
+    JSONObject prepareUsinglogJSON(Context context, String start_millis, String end_millis,
                                    String duration, String activities) throws JSONException {
+        JSONObject jsonUsinglog = new JSONObject();
+        try {
+            ClientdataManager clientdataManager = new ClientdataManager(context);
+            jsonUsinglog = clientdataManager.prepareClientdataJSON();
+            if (session_id.equals("")) {
+                session_id = CommonUtil.getSessionid(context);
+            }
+            jsonUsinglog.put("tj_plt", AppInfo.getAppKey(context));
+            jsonUsinglog.put("tj_app", AppInfo.getAppName(context));
 
-        ClientdataManager clientdataManager = new ClientdataManager(contextWR.get());
-        JSONObject jsonUsinglog = clientdataManager.prepareClientdataJSON();
-        ;
-        if (session_id.equals("")) {
-            session_id = CommonUtil.getSessionid(contextWR.get());
+        } catch (Exception e) {
+            CobubLog.i(UmsConstants.LOG_TAG, UsinglogManager.class, "usinglog context is null");
         }
-        jsonUsinglog.put("tj_plt", AppInfo.getAppKey(contextWR.get()));
         jsonUsinglog.put("tj_atype", "duration");
-        jsonUsinglog.put("tj_app", AppInfo.getAppName(contextWR.get()));
         jsonUsinglog.put("tj_st", start_millis);
         jsonUsinglog.put("tj_et", end_millis);
         jsonUsinglog.put("tj_dur", duration);
         jsonUsinglog.put("tj_wlp", activities);
-
         return jsonUsinglog;
     }
 
@@ -102,7 +101,7 @@ class UsinglogManager {
 
         JSONObject info;
         try {
-            info = prepareUsinglogJSON(start_millis, end_millis, duration,
+            info = prepareUsinglogJSON(context, start_millis, end_millis, duration,
                     pageName);
             CommonUtil.saveInfoToFile("activityInfo", info, context);
         } catch (JSONException e) {
@@ -131,7 +130,7 @@ class UsinglogManager {
 
             JSONObject obj;
             try {
-                obj = prepareUsinglogJSON(start_millis, end_millis, duration,
+                obj = prepareUsinglogJSON(context, start_millis, end_millis, duration,
                         lastView);
                 CommonUtil.saveInfoToFile("activityInfo", obj, context);
             } catch (JSONException e) {

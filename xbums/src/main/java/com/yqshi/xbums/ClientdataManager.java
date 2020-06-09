@@ -11,6 +11,7 @@
 package com.yqshi.xbums;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.yqshi.xbums.constants.UmsConstants;
 
@@ -31,18 +32,26 @@ class ClientdataManager {
     public JSONObject prepareClientdataJSON() throws JSONException {
         JSONObject jsonClientdata = new JSONObject();
         try {
+            SharedPrefUtil spu = new SharedPrefUtil(context);
+            String customparams = spu.getValue("customParams", "");
+            if (!TextUtils.isEmpty(customparams)) {
+                jsonClientdata = new JSONObject(customparams);
+            }
             jsonClientdata.put("tj_deviceid", DeviceInfo.getDeviceId());  //设备ID 拿得到就有否则就为uuid
             jsonClientdata.put("tj_sys", "Android " + DeviceInfo.getOsVersion()); //系统版本号 eg：9.0.0
             jsonClientdata.put("tj_plat", PLATFORM);     //客户端平台
             jsonClientdata.put("tj_nlang", DeviceInfo.getLanguage()); //当前手机设置的语言
             //jsonClientdata.put("tj_appkey", AppInfo.getAppKey(context)); //
             jsonClientdata.put("tj_resol", DeviceInfo.getResolution()); // 分辨率
+            jsonClientdata.put("tj_sh", DeviceInfo.getHeightPix()); // 长
+            jsonClientdata.put("tj_sw", DeviceInfo.getWidthPix()); // 宽
+            jsonClientdata.put("tj_pix", DeviceInfo.getDensity()); // 像素比
             jsonClientdata.put("tj_ispc", "0"); //是否PC
             jsonClientdata.put("tj_phonetype", DeviceInfo.getPhoneType());//PHONE_TYPE_NONE //0 PHONE_TYPE_GSM //1 PHONE_TYPE_CDMA //2 PHONE_TYPE_SIP //3
             jsonClientdata.put("tj_imsi", DeviceInfo.getIMSI()); //获取SIM卡唯一标识 没有则为空
             jsonClientdata.put("tj_mccmnc", DeviceInfo.getMCCMNC()); //返回MCC+MNC代码 (SIM卡运营商国家代码和运营商网络代码)
             jsonClientdata.put("tj_mccmnc_name", DeviceInfo.getMCCMNCName()); //返回MCC+MNC代码 (SIM卡运营商国家代码和运营商网络代码)
-           // jsonClientdata.put("tj_cellid", DeviceInfo.getCellInfoofCID()); //基站ID
+            // jsonClientdata.put("tj_cellid", DeviceInfo.getCellInfoofCID()); //基站ID
             //jsonClientdata.put("tj_lac", DeviceInfo.getCellInfoofLAC()); //获取gsm网络编号
 
 
@@ -51,7 +60,7 @@ class ClientdataManager {
             jsonClientdata.put("tj_appv", AppInfo.getAppVersion(context));//app版本号
 //        jsonClientdata.put("useridentifier",
 //                CommonUtil.getUserIdentifier(context));
-            jsonClientdata.put("tj_modulename", DeviceInfo.getDeviceProduct());//生产厂商
+            jsonClientdata.put("tj_productname", DeviceInfo.getDeviceProduct());//生产厂商
             jsonClientdata.put("tj_model", DeviceInfo.getDeviceName());//厂家+品牌名称 eg:HUAWEI+EDI-AL10
             jsonClientdata.put("tj_wifimac", DeviceInfo.getWifiMac()); //wifi 的mac地址
             jsonClientdata.put("tj_havebt", DeviceInfo.getBluetoothAvailable());// 蓝牙是否打开 true 打开 false 没有

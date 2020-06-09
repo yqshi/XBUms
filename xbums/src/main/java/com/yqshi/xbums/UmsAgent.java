@@ -13,9 +13,13 @@ package com.yqshi.xbums;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.yqshi.xbums.constants.UmsConstants;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
 import java.util.Timer;
@@ -23,8 +27,8 @@ import java.util.TimerTask;
 
 public class UmsAgent {
 
-    private static Handler handler;
     private static boolean isFirst = true;
+    private static Handler handler;
     private static Timer timer = null;
     private static WeakReference<Context> contextWR;
     private static UsinglogManager usinglogManager;
@@ -49,10 +53,10 @@ public class UmsAgent {
         POST_ONSTART, POST_NOW, POST_INTERVAL
     }
 
-    private static final HandlerThread localHandlerThread = new HandlerThread("UmsAgent");
-
     static {
+        HandlerThread localHandlerThread = new HandlerThread("UmsAgent");
         localHandlerThread.start();
+        handler = new Handler(localHandlerThread.getLooper());
     }
 
     /**
@@ -60,8 +64,7 @@ public class UmsAgent {
      */
     private static void init(Context context) {
         updateContent(context);
-        handler = new Handler(localHandlerThread.getLooper());
-        UmsAgent.postHistoryLog();
+        //UmsAgent.postHistoryLog();
 
         //UmsAgent.onError();  上传错误日志，崩溃信息暂时不用上传
         CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call init();BaseURL = " + UmsConstants.BASE_URL);
@@ -149,30 +152,26 @@ public class UmsAgent {
     /**
      * upload startup and device information
      *
-     * @param context
-
-    static void postClientData() {
-    Thread thread = new Thread(new Runnable() {
-    @Override public void run() {
-    if (isFirst) {
-    CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Start postClientdata thread");
-    ClientdataManager cm = new ClientdataManager(contextWR.get());
-    cm.postClientData();
-    isFirst = false;
-    }
-    }
-    });
-    handler.post(thread);
-    }*/
-
-    /**
-     * @param context
+     * @param context static void postClientData() {
+     *                Thread thread = new Thread(new Runnable() {
+     * @Override public void run() {
+     * if (isFirst) {
+     * CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Start postClientdata thread");
+     * ClientdataManager cm = new ClientdataManager(contextWR.get());
+     * cm.postClientData();
+     * isFirst = false;
+     * }
+     * }
+     * });
+     * handler.post(thread);
+     * }
      */
+
     static void postHistoryLog() {
         CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "postHistoryLog");
         if (CommonUtil.isNetworkAvailable(contextWR.get())) {
-            Thread thread = new UploadHistoryLog(contextWR.get());
-            handler.post(thread);
+            UploadHistoryLog uploadHistoryLog = new UploadHistoryLog(contextWR.get());
+            uploadHistoryLog.uploadHistoryData();
         }
     }
 
@@ -204,8 +203,8 @@ public class UmsAgent {
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    Thread thread = new UploadHistoryLog(context);
-                    handler.post(thread);
+                    UploadHistoryLog uploadHistoryLog = new UploadHistoryLog(contextWR.get());
+                    uploadHistoryLog.uploadHistoryData();
                 }
             }, start_time - (running_time % start_time), start_time);
         }
@@ -225,6 +224,7 @@ public class UmsAgent {
         // 定时发送模式
         setSystemStartTime(contextWR.get());
 
+
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -235,6 +235,7 @@ public class UmsAgent {
             }
         });
         handler.post(thread);
+
     }
 
     /**
@@ -252,6 +253,7 @@ public class UmsAgent {
         updateContent(context);
         setSystemStartTime(contextWR.get());
 
+
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -262,6 +264,7 @@ public class UmsAgent {
             }
         });
         handler.post(thread);
+
     }
 
     /**
@@ -289,6 +292,7 @@ public class UmsAgent {
             }
         });
         handler.post(thread);
+
     }
 
     /**
@@ -296,24 +300,23 @@ public class UmsAgent {
      * information to server
      *
      * @param context
-     */
-    static void onError() {
-        if (!INIT) {
-            CobubLog.e(UmsConstants.LOG_TAG, UmsAgent.class, "sdk is not init!");
-            return;
-        }
 
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call onError()");
-                MyCrashHandler crashHandler = MyCrashHandler.getInstance();
-                crashHandler.init(contextWR.get().getApplicationContext());
-                Thread.setDefaultUncaughtExceptionHandler(crashHandler);
-            }
-        });
-        handler.post(thread);
+    static void onError() {
+    if (!INIT) {
+    CobubLog.e(UmsConstants.LOG_TAG, UmsAgent.class, "sdk is not init!");
+    return;
     }
+
+    Thread thread = new Thread(new Runnable() {
+    @Override public void run() {
+    CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call onError()");
+    MyCrashHandler crashHandler = MyCrashHandler.getInstance();
+    crashHandler.init(contextWR.get().getApplicationContext());
+    Thread.setDefaultUncaughtExceptionHandler(crashHandler);
+    }
+    });
+    handler.post(thread);
+    } */
 
     /**
      * Call this function to send the catched exception stack information to
@@ -322,24 +325,23 @@ public class UmsAgent {
      * @param context
      * @param errorType
      * @param errorinfo
-     */
+
     public static void onError(Context context, final String errorType, final String errorinfo) {
-        if (!INIT) {
-            CobubLog.e(UmsConstants.LOG_TAG, UmsAgent.class, "sdk is not init!");
-            return;
-        }
-        updateContent(context);
-        final String error = errorType + "\n" + errorinfo;
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call onError(context,errorinfo)");
-                ErrorManager em = new ErrorManager(contextWR.get());
-                em.postErrorInfo(error);
-            }
-        });
-        handler.post(thread);
+    if (!INIT) {
+    CobubLog.e(UmsConstants.LOG_TAG, UmsAgent.class, "sdk is not init!");
+    return;
     }
+    updateContent(context);
+    final String error = errorType + "\n" + errorinfo;
+    Thread thread = new Thread(new Runnable() {
+    @Override public void run() {
+    CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call onError(context,errorinfo)");
+    ErrorManager em = new ErrorManager(contextWR.get());
+    em.postErrorInfo(error);
+    }
+    });
+    handler.post(thread);
+    }*/
 
     /**
      * Call this function to send the tags which bind to useridentifier 发送用户标签
@@ -353,15 +355,9 @@ public class UmsAgent {
             return;
         }
         updateContent(context);
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call postTags()");
-                TagManager tm = new TagManager(contextWR.get(), tags);
-                tm.PostTag();
-            }
-        });
-        handler.post(thread);
+        CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call postTags()");
+        TagManager tm = new TagManager(contextWR.get(), tags);
+        tm.PostTag();
     }
 
     /**
@@ -375,13 +371,8 @@ public class UmsAgent {
             return;
         }
         updateContent(context);
-        Thread thread = new Thread(new Runnable() {
-            public void run() {
-                CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call onEvent(context,event_id)");
-                onEvent(contextWR.get(), event_id, 1);
-            }
-        });
-        handler.post(thread);
+        CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call onEvent(context,event_id)");
+        onEvent(contextWR.get(), event_id, 1);
     }
 
     /**
@@ -398,14 +389,8 @@ public class UmsAgent {
             return;
         }
         updateContent(context);
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call onEvent(event_id,acc)");
-                onEvent(contextWR.get(), event_id, "", acc);
-            }
-        });
-        handler.post(thread);
+        CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call onEvent(event_id,acc)");
+        onEvent(contextWR.get(), event_id, "", acc);
     }
 
     /**
@@ -428,17 +413,10 @@ public class UmsAgent {
         if (acc < 1) {
             CobubLog.e(UmsConstants.LOG_TAG, UmsAgent.class, "Event acc should be greater than zero");
         }
-
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call onEvent(event_id,label,acc)");
-                EventManager em = new EventManager(contextWR.get(), event_id, label,
-                        acc + "");
-                em.postEventInfo();
-            }
-        });
-        handler.post(thread);
+        CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call onEvent(event_id,label,acc)");
+        EventManager em = new EventManager(contextWR.get(), event_id, label,
+                acc + "");
+        em.postEventInfo();
     }
 
     /**
@@ -456,16 +434,10 @@ public class UmsAgent {
             return;
         }
         updateContent(context);
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call onEvent(context,event_id,label,acc)");
-                EventManager em = new EventManager(contextWR.get(), event_id, label,
-                        "1", json);
-                em.postEventInfo();
-            }
-        });
-        handler.post(thread);
+        CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call onEvent(context,event_id,label,acc)");
+        EventManager em = new EventManager(contextWR.get(), event_id, label,
+                "1", json);
+        em.postEventInfo();
     }
 
     public static void onGenericEvent(Context context,
@@ -475,16 +447,10 @@ public class UmsAgent {
             return;
         }
         updateContent(context);
-        Runnable postEventRunnable = new Runnable() {
-            @Override
-            public void run() {
 
-                EventManager em = new EventManager(contextWR.get(),
-                        UmsAgent.EVENT_DEFAULT, label, value);
-                em.postEventInfo();
-            }
-        };
-        handler.post(postEventRunnable);
+        EventManager em = new EventManager(contextWR.get(),
+                UmsAgent.EVENT_DEFAULT, label, value);
+        em.postEventInfo();
     }
 
     /**
@@ -560,15 +526,9 @@ public class UmsAgent {
             return;
         }
         updateContent(context);
-        final Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call updaeOnlineConfig");
-                ConfigManager cm = new ConfigManager(contextWR.get());
-                cm.updateOnlineConfig();
-            }
-        });
-        handler.post(thread);
+        CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call updaeOnlineConfig");
+        ConfigManager cm = new ConfigManager(contextWR.get());
+        cm.updateOnlineConfig();
     }
 
     /**
@@ -634,16 +594,10 @@ public class UmsAgent {
             CobubLog.e(UmsConstants.LOG_TAG, UmsAgent.class, "sdk is not init!");
             return;
         }
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call postWebPage()");
-                if (usinglogManager == null)
-                    usinglogManager = new UsinglogManager(contextWR.get());
-                usinglogManager.onWebPage(pageName, contextWR.get());
-            }
-        });
-        handler.post(thread);
+        CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call postWebPage()");
+        if (usinglogManager == null)
+            usinglogManager = new UsinglogManager(contextWR.get());
+        usinglogManager.onWebPage(pageName, contextWR.get());
     }
 
     /**
@@ -669,20 +623,14 @@ public class UmsAgent {
      *
      * @param context
      */
-    public static void updateCustomParameters(Context context) {
+    private static void updateCustomParameters(Context context) {
         if (!INIT) {
             CobubLog.e(UmsConstants.LOG_TAG, UmsAgent.class, "sdk is not init!");
             return;
         }
         updateContent(context);
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                CustomParameterManager cpm = new CustomParameterManager(contextWR.get());
-                cpm.getParameters();
-            }
-        });
-        handler.post(thread);
+        CustomParameterManager cpm = new CustomParameterManager(contextWR.get());
+        cpm.getParameters();
     }
 
     /**
@@ -692,13 +640,39 @@ public class UmsAgent {
      * @param key 自定义参数的键值
      * @return 对应参数值
      */
-    public static String getConfigParameter(String key) {
+    private static String getConfigParameter(String key) {
         if (!INIT) {
             CobubLog.e(UmsConstants.LOG_TAG, UmsAgent.class, "sdk is not init!");
             return "";
         }
         SharedPrefUtil spu = new SharedPrefUtil(contextWR.get());
         return spu.getValue(key, "");
+    }
+
+
+    /**
+     * 设置自定义参数的值，<br>
+     *
+     * @param key 自定义参数的键值
+     * @return 对应参数值
+     */
+    public static void setCustomParams(String key, String value) {
+        if (!INIT) {
+            CobubLog.e(UmsConstants.LOG_TAG, UmsAgent.class, "sdk is not init!");
+            return;
+        }
+        SharedPrefUtil spu = new SharedPrefUtil(contextWR.get());
+        String customparams = spu.getValue("customParams", "");
+        JSONObject customObject = new JSONObject();
+        try {
+            if (!TextUtils.isEmpty(customparams)) {
+                customObject = new JSONObject(customparams);
+            }
+            customObject.put(key, value);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        spu.setValue("customParams", customObject.toString());
     }
 
     /**
@@ -713,6 +687,7 @@ public class UmsAgent {
         }
         DeviceInfo.setDeviceId(deviceID);
     }
+
 
     /**
      * 要求API 14+ （Android 4.0+）

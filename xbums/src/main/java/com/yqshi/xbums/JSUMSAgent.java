@@ -26,7 +26,7 @@ public class JSUMSAgent {
 	}
 	@JavascriptInterface 
 	public void onError(String errorType,String errorInfo){
-		UmsAgent.onError(context, errorType,errorInfo);
+		//UmsAgent.onError(context, errorType,errorInfo);
 		
 	}
 	@JavascriptInterface 

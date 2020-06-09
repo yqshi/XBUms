@@ -17,7 +17,7 @@ import com.yqshi.xbums.constants.UmsConstants;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-class UploadHistoryLog extends Thread {
+class UploadHistoryLog {
     public Context context;
 
     public UploadHistoryLog(Context context) {
@@ -25,8 +25,7 @@ class UploadHistoryLog extends Thread {
         this.context = context;
     }
 
-    @Override
-    public void run() {
+    public void uploadHistoryData() {
         String baseDir = context.getCacheDir().getAbsolutePath()
                 + "/cobub.cache";
         String cachfileclientdata = baseDir + "clientData";

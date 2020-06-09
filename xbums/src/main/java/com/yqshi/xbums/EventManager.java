@@ -54,7 +54,7 @@ class EventManager {
             localJSONObject.put("tj_app", AppInfo.getAppName(context));
             localJSONObject.put("evt_i", eventid);
             localJSONObject.put("evt_n", label);
-            localJSONObject.put("evt_c", acc); //1 点击事件
+            localJSONObject.put("evt_a", acc); //1 点击次数
 
             //key值可能会与上面的重复，加一个前缀V_
             if (json != null && json.length() > 0) {
