@@ -469,11 +469,21 @@ class DeviceInfo {
                     case "46000":
                     case "46002":
                     case "46007":
+                    case "46008":
+                    case "00101":
                         return "中国移动";
                     case "46001":
+                    case "46006":
+                    case "46009":
+                    case "46010":
                         return "中国联通";
                     case "46003":
+                    case "46005":
+                    case "46011":
+                    case "46099":
                         return "中国电信";
+                    case "46020":
+                        return "中国铁通";
                 }
             }
         } catch (Exception e) {
