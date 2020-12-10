@@ -673,7 +673,9 @@ class CommonUtil {
         encodedParams
                 .append("tj_plt").append("=").append(AppInfo.getAppKey(context))
                 .append("&")
-                .append("token").append("=").append(AppInfo.getAppKey(context))
+                .append("token").append("=").append("558b2a72e52841f697d192196927ceed")
+                .append("&")
+                .append("tj_trace").append("=").append(DeviceInfo.getDeviceId())
                 .append("&")
                 .append("tj_tsp").append("=").append(String.format("%010d", System.currentTimeMillis() / 1000));
 

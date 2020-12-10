@@ -11,8 +11,6 @@
 
 package com.yqshi.xbums;
 
-import android.content.Context;
-
 import com.yqshi.xbums.constants.UmsConstants;
 
 import org.json.JSONObject;
@@ -54,7 +52,7 @@ class NetworkUtil {
 
         Request request = new Request.Builder()
                 .url(url)
-                .post(RequestBody.create(mediaType, data))
+                .post(RequestBody.create(data, mediaType))
                 .build();
         Call call = client.newCall(request);
         call.enqueue(new Callback() {

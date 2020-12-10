@@ -40,10 +40,12 @@ class UsinglogManager {
         } catch (Exception e) {
             CobubLog.i(UmsConstants.LOG_TAG, UsinglogManager.class, "usinglog context is null");
         }
+        double dura = Double.parseDouble(duration) / 1000;
         jsonUsinglog.put("tj_atype", "duration");
+        jsonUsinglog.put("tj_adt", start_millis);
         jsonUsinglog.put("tj_st", start_millis);
         jsonUsinglog.put("tj_et", end_millis);
-        jsonUsinglog.put("tj_dur", duration);
+        jsonUsinglog.put("tj_dur", String.valueOf(dura));
         jsonUsinglog.put("tj_wlp", activities);
         return jsonUsinglog;
     }
