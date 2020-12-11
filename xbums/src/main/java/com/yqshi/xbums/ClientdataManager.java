@@ -71,6 +71,11 @@ class ClientdataManager {
             // jsonClientdata.put("salt", CommonUtil.getSALT(context));
             jsonClientdata.put("tj_sdk_version", UmsConstants.LIB_VERSION);//sdk版本
 
+            //针对tj_trace做处理
+            if (jsonClientdata.isNull("tj_trace")) {
+                jsonClientdata.put("tj_trace", DeviceInfo.getDeviceId());//经度
+            }
+
             if (CommonUtil.isSupportlocation(context)) {
                 jsonClientdata.put("tj_lat", DeviceInfo.getLatitude());//经度
                 jsonClientdata.put("tj_lng", DeviceInfo.getLongitude());//纬度

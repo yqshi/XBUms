@@ -22,7 +22,6 @@ class UsinglogManager {
     private String session_id = "";
 
     public UsinglogManager(Context context) {
-
     }
 
     JSONObject prepareUsinglogJSON(Context context, String start_millis, String end_millis,

@@ -97,7 +97,7 @@ class UploadActivityLog extends Thread {
 
             }
 
-        } catch (JSONException e) {
+        } catch (Exception e) {
             CobubLog.e(UmsConstants.LOG_TAG, e);
         }
 

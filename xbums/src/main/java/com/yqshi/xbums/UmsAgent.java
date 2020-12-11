@@ -28,7 +28,7 @@ import java.util.TimerTask;
 public class UmsAgent {
 
     private static boolean isFirst = true;
-    private static Handler handler;
+    private static final Handler handler;
     private static Timer timer = null;
     private static WeakReference<Context> contextWR;
     private static UsinglogManager usinglogManager;
@@ -64,13 +64,11 @@ public class UmsAgent {
      */
     private static void init(Context context) {
         updateContent(context);
-        //UmsAgent.postHistoryLog();
+//        UmsAgent.postUploadActivityLog();
 
-        //UmsAgent.onError();  上传错误日志，崩溃信息暂时不用上传
         CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call init();BaseURL = " + UmsConstants.BASE_URL);
         SharedPrefUtil spu = new SharedPrefUtil(contextWR.get());
         spu.setValue("system_start_time", System.currentTimeMillis());
-        // registerActivityCallback(context);
     }
 
     /**
@@ -149,23 +147,6 @@ public class UmsAgent {
         CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "setAutoLocation = " + String.valueOf(isLocation));
     }
 
-    /**
-     * upload startup and device information
-     *
-     * @param context static void postClientData() {
-     *                Thread thread = new Thread(new Runnable() {
-     * @Override public void run() {
-     * if (isFirst) {
-     * CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Start postClientdata thread");
-     * ClientdataManager cm = new ClientdataManager(contextWR.get());
-     * cm.postClientData();
-     * isFirst = false;
-     * }
-     * }
-     * });
-     * handler.post(thread);
-     * }
-     */
 
     static void postHistoryLog() {
         CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "postHistoryLog");
@@ -235,7 +216,6 @@ public class UmsAgent {
             }
         });
         handler.post(thread);
-
     }
 
     /**
@@ -292,7 +272,6 @@ public class UmsAgent {
             }
         });
         handler.post(thread);
-
     }
 
     /**

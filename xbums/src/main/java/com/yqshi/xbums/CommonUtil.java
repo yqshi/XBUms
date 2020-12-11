@@ -422,6 +422,7 @@ class CommonUtil {
         sp.setValue("session_id", sessionId);
 
         saveSessionTime(context);
+
         Thread threadactivity = new UploadActivityLog(context);
         threadactivity.run();
         return sessionId;
@@ -519,7 +520,7 @@ class CommonUtil {
         FileInputStream in = null;
         StringBuffer dataBuffer = new StringBuffer();
 
-        ReentrantReadWriteLock rwl = CommonUtil.getRwl();
+        ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
         if (rwl.readLock().tryLock()) {
             //上读锁,此时其他线程只能读，写操作必须等待读锁释放
             rwl.readLock().lock();
@@ -674,8 +675,6 @@ class CommonUtil {
                 .append("tj_plt").append("=").append(AppInfo.getAppKey(context))
                 .append("&")
                 .append("token").append("=").append("558b2a72e52841f697d192196927ceed")
-                .append("&")
-                .append("tj_trace").append("=").append(DeviceInfo.getDeviceId())
                 .append("&")
                 .append("tj_tsp").append("=").append(String.format("%010d", System.currentTimeMillis() / 1000));
 
