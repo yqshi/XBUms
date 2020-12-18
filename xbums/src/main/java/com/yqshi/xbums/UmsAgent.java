@@ -738,7 +738,7 @@ public class UmsAgent {
 //
 //	}
     private static void updateContent(Context context) {
-        UmsAgent.contextWR = new WeakReference<Context>(context);
+        UmsAgent.contextWR = new WeakReference<>(context);
         context = null;
     }
 }

@@ -18,25 +18,28 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
+
 
 class AccessManager {
-    private Context context;
+    private WeakReference<Context> contextWR;
 
     public AccessManager(Context context) {
-        this.context = context;
+        contextWR = new WeakReference<>(context);
+        context = null;
     }
 
     public JSONObject prepareAccessDataJSON() throws JSONException {
-        ClientdataManager clientdataManager = new ClientdataManager(context);
+        ClientdataManager clientdataManager = new ClientdataManager(contextWR.get());
         JSONObject jsonAccessdata = new JSONObject();
         try {
-            SharedPrefUtil sp = new SharedPrefUtil(context);
-            String pageName = sp.getValue("CurrentPage", CommonUtil.getActivityName(context));
+            SharedPrefUtil sp = new SharedPrefUtil(contextWR.get());
+            String pageName = sp.getValue("CurrentPage", CommonUtil.getActivityName(contextWR.get()));
 
             jsonAccessdata = clientdataManager.prepareClientdataJSON();
-            jsonAccessdata.put("tj_plt", AppInfo.getAppKey(context));
+            jsonAccessdata.put("tj_plt", AppInfo.getAppKey(contextWR.get()));
             jsonAccessdata.put("tj_atype", "access");
-            jsonAccessdata.put("tj_app", AppInfo.getAppName(context));
+            jsonAccessdata.put("tj_app", AppInfo.getAppName(contextWR.get()));
             jsonAccessdata.put("tj_adt", CommonUtil.getFormatTime(System.currentTimeMillis()));
             jsonAccessdata.put("tj_wlp", pageName);
         } catch (Exception e) {
@@ -57,8 +60,12 @@ class AccessManager {
         }
         String postdata = new JSONArray().put(clientData).toString();
 
-        if (CommonUtil.isNetworkAvailable(context)) {
-            NetworkUtil.Post(CommonUtil.assemParamsUrl(context, UmsConstants.BASE_URL), postdata, new OnDataCallBack() {
+        if (contextWR.get() == null) {
+            return;
+        }
+
+        if (CommonUtil.isNetworkAvailable(contextWR.get())) {
+            NetworkUtil.Post(CommonUtil.assemParamsUrl(contextWR.get(), UmsConstants.BASE_URL), postdata, new OnDataCallBack() {
                 @Override
                 public void onSuccess(MyMessage response) {
 
@@ -67,11 +74,11 @@ class AccessManager {
                 @Override
                 public void onFailure(String errorEntity) {
                     CobubLog.e(UmsConstants.LOG_TAG, AccessManager.class, "Error Code=" + errorEntity);
-                    CommonUtil.saveInfoToFile("accessData", clientData, context);
+                    CommonUtil.saveInfoToFile("accessData", clientData, contextWR.get());
                 }
             });
         } else {
-            CommonUtil.saveInfoToFile("accessData", clientData, context);
+            CommonUtil.saveInfoToFile("accessData", clientData, contextWR.get());
         }
     }
 }

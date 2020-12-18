@@ -30,6 +30,7 @@ import android.view.WindowManager;
 
 import com.yqshi.xbums.constants.UmsConstants;
 
+import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -40,7 +41,7 @@ import java.util.Locale;
  * @author apple
  */
 class DeviceInfo {
-    private static Context context;
+    private static WeakReference<Context> contextWR;
     private static Location location;
     private static TelephonyManager telephonyManager;
     private static LocationManager locationManager;
@@ -49,13 +50,14 @@ class DeviceInfo {
     private static String DEVICE_ID = "";
     private static String DEVICE_NAME = "";
 
+
     public static void init(Context context) {
-        DeviceInfo.context = context;
+        DeviceInfo.contextWR = new WeakReference<>(context);
 
         try {
-            telephonyManager = (TelephonyManager) (context
+            telephonyManager = (TelephonyManager) (contextWR.get()
                     .getSystemService(Context.TELEPHONY_SERVICE));
-            locationManager = (LocationManager) context
+            locationManager = (LocationManager) contextWR.get()
                     .getSystemService(Context.LOCATION_SERVICE);
             bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -63,6 +65,8 @@ class DeviceInfo {
             CobubLog.e(UmsConstants.LOG_TAG, DeviceInfo.class, e.toString());
         }
         getLocation();
+        context = null;
+
     }
 
     public static String getLanguage() {
@@ -112,13 +116,13 @@ class DeviceInfo {
      * 获取手机的密度
      */
     public static float getDensity() {
-        DisplayMetrics dm = context.getResources().getDisplayMetrics();
+        DisplayMetrics dm = contextWR.get().getResources().getDisplayMetrics();
         return dm.density;
     }
 
     public static String getResolution() {
         DisplayMetrics displaysMetrics = new DisplayMetrics();
-        WindowManager wm = (WindowManager) context
+        WindowManager wm = (WindowManager) contextWR.get()
                 .getSystemService(Context.WINDOW_SERVICE);
         wm.getDefaultDisplay().getMetrics(displaysMetrics);
         CobubLog.i(UmsConstants.LOG_TAG, DeviceInfo.class, "getResolution()=" + displaysMetrics.widthPixels + "x"
@@ -128,7 +132,7 @@ class DeviceInfo {
 
     public static String getHeightPix() {
         DisplayMetrics displaysMetrics = new DisplayMetrics();
-        WindowManager wm = (WindowManager) context
+        WindowManager wm = (WindowManager) contextWR.get()
                 .getSystemService(Context.WINDOW_SERVICE);
         wm.getDefaultDisplay().getMetrics(displaysMetrics);
         return String.valueOf(displaysMetrics.heightPixels);
@@ -136,7 +140,7 @@ class DeviceInfo {
 
     public static String getWidthPix() {
         DisplayMetrics displaysMetrics = new DisplayMetrics();
-        WindowManager wm = (WindowManager) context
+        WindowManager wm = (WindowManager) contextWR.get()
                 .getSystemService(Context.WINDOW_SERVICE);
         wm.getDefaultDisplay().getMetrics(displaysMetrics);
         return String.valueOf(displaysMetrics.widthPixels);
@@ -167,7 +171,7 @@ class DeviceInfo {
             if (isSimulator())
                 sensorManager = null;
             else
-                sensorManager = (SensorManager) context
+                sensorManager = (SensorManager) contextWR.get()
                         .getSystemService(Context.SENSOR_SERVICE);
             CobubLog.i(UmsConstants.LOG_TAG, DeviceInfo.class, "getGravityAvailable()");
             return sensorManager != null;
@@ -208,7 +212,7 @@ class DeviceInfo {
     public static String getIMSI() {
         String result = "";
         try {
-            if (!CommonUtil.checkPermissions(context,
+            if (!CommonUtil.checkPermissions(contextWR.get(),
                     Manifest.permission.READ_PHONE_STATE)) {
                 CobubLog.e(UmsConstants.LOG_TAG, DeviceInfo.class,
                         "READ_PHONE_STATE permission should be added into AndroidManifest.xml.");
@@ -229,7 +233,7 @@ class DeviceInfo {
 
     public static String getWifiMac() {
         try {
-            WifiManager wifiManager = (WifiManager) context
+            WifiManager wifiManager = (WifiManager) contextWR.get()
                     .getSystemService(Context.WIFI_SERVICE);
             WifiInfo wi = wifiManager.getConnectionInfo();
             String result = wi.getMacAddress();
@@ -280,7 +284,7 @@ class DeviceInfo {
 
     public static String getNetworkTypeWIFI2G3G() {
         try {
-            ConnectivityManager cm = (ConnectivityManager) context
+            ConnectivityManager cm = (ConnectivityManager) contextWR.get()
                     .getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo ni = cm.getActiveNetworkInfo();
             String type = "";
@@ -300,13 +304,13 @@ class DeviceInfo {
 
     public static boolean getWiFiAvailable() {
         try {
-            if (!CommonUtil.checkPermissions(context,
+            if (!CommonUtil.checkPermissions(contextWR.get(),
                     Manifest.permission.ACCESS_WIFI_STATE)) {
                 CobubLog.e(UmsConstants.LOG_TAG, DeviceInfo.class,
                         "ACCESS_WIFI_STATE permission should be added into AndroidManifest.xml.");
                 return false;
             }
-            ConnectivityManager connectivity = (ConnectivityManager) context
+            ConnectivityManager connectivity = (ConnectivityManager) contextWR.get()
                     .getSystemService(Context.CONNECTIVITY_SERVICE);
             if (connectivity != null) {
                 NetworkInfo[] info = connectivity.getAllNetworkInfo();
@@ -328,7 +332,7 @@ class DeviceInfo {
     private static String getDeviceIMEI() {
         String result = "";
         try {
-            if (!CommonUtil.checkPermissions(context,
+            if (!CommonUtil.checkPermissions(contextWR.get(),
                     Manifest.permission.READ_PHONE_STATE)) {
                 CobubLog.e(UmsConstants.LOG_TAG, DeviceInfo.class,
                         "READ_PHONE_STATE permission should be added into AndroidManifest.xml.");
@@ -346,7 +350,7 @@ class DeviceInfo {
     public static String getPhoneNum() {
         String result = "";
         try {
-            if (!CommonUtil.checkPermissions(context,
+            if (!CommonUtil.checkPermissions(contextWR.get(),
                     Manifest.permission.READ_PHONE_STATE)) {
                 CobubLog.e(UmsConstants.LOG_TAG, DeviceInfo.class,
                         "READ_PHONE_STATE permission should be added into AndroidManifest.xml.");
@@ -364,7 +368,7 @@ class DeviceInfo {
     private static String getSSN() {
         String result = "";
         try {
-            if (!CommonUtil.checkPermissions(context,
+            if (!CommonUtil.checkPermissions(contextWR.get(),
                     Manifest.permission.READ_PHONE_STATE)) {
                 CobubLog.e(UmsConstants.LOG_TAG, DeviceInfo.class,
                         "READ_PHONE_STATE permission should be added into AndroidManifest.xml.");
@@ -386,7 +390,7 @@ class DeviceInfo {
     public static String getDeviceId() {
         if (DEVICE_ID.equals("")) {
             try {
-                SharedPrefUtil sp = new SharedPrefUtil(context);
+                SharedPrefUtil sp = new SharedPrefUtil(contextWR.get());
                 String uniqueid = sp.getValue("uniqueuid", "");
 
                 if (!uniqueid.equals("")) {
@@ -394,7 +398,7 @@ class DeviceInfo {
                 } else {
                     String imei = getDeviceIMEI();
                     String imsi = getIMSI();
-                    String salt = CommonUtil.getSALT(context);
+                    String salt = CommonUtil.getSALT(contextWR.get());
                     DEVICE_ID = CommonUtil.md5(imei + imsi + salt);
                     sp.setValue("uniqueuid", DEVICE_ID);
                 }

@@ -34,8 +34,8 @@ public class UmsConstants {
     public static UmsAgent.LogLevel DebugLevel = UmsAgent.LogLevel.Debug;
 
     // Default settings for continue Session duration. If user quit the app and 
-    // then re-entry the app in 10 seconds, it will be seemed as the same session.
-    public static long kContinueSessionMillis = 10000L; // Default is 10s.
+    // then re-entry the app in 1.5 seconds, it will be seemed as the same session.
+    public static long kContinueSessionMillis = 1500L; // Default is 1.5s.
 
     public static boolean mProvideGPSData = false; // Default is false, not use GPS data.
 
@@ -60,7 +60,7 @@ public class UmsConstants {
     //for cpos dn check
     public static String SDK_HTTPS_DN = "${sdk.https.dn}";
 
-    public static String LIB_VERSION = "1.0.11";
+    public static String LIB_VERSION = "1.0.12";
 
 
 }

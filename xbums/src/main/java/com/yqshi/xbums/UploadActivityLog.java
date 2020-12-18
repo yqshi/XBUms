@@ -39,6 +39,9 @@ class UploadActivityLog extends Thread {
     }
 
     private void postactivityinfo(String cachfileactivity) {
+        if(contextWR.get() == null){
+            return;
+        }
         // 首先判断是否能发送，如果不能发送就没必要读文件了
         if (!CommonUtil.isNetworkAvailable(contextWR.get())) {
             return;

@@ -542,7 +542,10 @@ class CommonUtil {
                     }
                 }
                 //解读锁
-                rwl.readLock().unlock();
+                if (rwl != null) {
+                    rwl.readLock().unlock();
+                    rwl = null;
+                }
                 fileclientdata.delete();
             }
         }
