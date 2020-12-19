@@ -71,27 +71,7 @@ class UploadActivityLog extends Thread {
             // 发送之前再度判断
             if (CommonUtil.isNetworkAvailable(contextWR.get())) {
                 CobubLog.i(UmsConstants.LOG_TAG, UploadActivityLog.class, "post activity info");
-                NetworkUtil.Post(CommonUtil.assemParamsUrl(contextWR.get(), UmsConstants.BASE_URL), postdata, new OnDataCallBack() {
-                    @Override
-                    public void onSuccess(MyMessage response) {
-
-                    }
-
-                    @Override
-                    public void onFailure(String errorEntity) {
-                        CobubLog.e(UmsConstants.LOG_TAG, UploadActivityLog.class, errorEntity);
-                        for (int i = 0; i < jsonarr.length(); i++) {
-                            try {
-                                CommonUtil.saveInfoToFile("activityInfo",
-                                        jsonarr.getJSONObject(i), contextWR.get());
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                });
-
-
+                NetworkUtil.Post(CommonUtil.assemParamsUrl(contextWR.get(), UmsConstants.BASE_URL), postdata, null);
             } else {
                 for (int i = 0; i < jsonarr.length(); i++) {
                     CommonUtil.saveInfoToFile("activityInfo",

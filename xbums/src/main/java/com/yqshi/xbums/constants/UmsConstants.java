@@ -60,7 +60,7 @@ public class UmsConstants {
     //for cpos dn check
     public static String SDK_HTTPS_DN = "${sdk.https.dn}";
 
-    public static String LIB_VERSION = "1.0.12";
+    public static String LIB_VERSION = "1.0.14";
 
 
 }

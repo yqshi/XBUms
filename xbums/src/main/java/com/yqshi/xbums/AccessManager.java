@@ -65,18 +65,7 @@ class AccessManager {
         }
 
         if (CommonUtil.isNetworkAvailable(contextWR.get())) {
-            NetworkUtil.Post(CommonUtil.assemParamsUrl(contextWR.get(), UmsConstants.BASE_URL), postdata, new OnDataCallBack() {
-                @Override
-                public void onSuccess(MyMessage response) {
-
-                }
-
-                @Override
-                public void onFailure(String errorEntity) {
-                    CobubLog.e(UmsConstants.LOG_TAG, AccessManager.class, "Error Code=" + errorEntity);
-                    CommonUtil.saveInfoToFile("accessData", clientData, contextWR.get());
-                }
-            });
+            NetworkUtil.Post(CommonUtil.assemParamsUrl(contextWR.get(), UmsConstants.BASE_URL), postdata, null);
         } else {
             CommonUtil.saveInfoToFile("accessData", clientData, contextWR.get());
         }

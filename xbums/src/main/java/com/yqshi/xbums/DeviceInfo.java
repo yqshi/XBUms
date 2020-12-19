@@ -168,13 +168,7 @@ class DeviceInfo {
             // often hangs out the application when it runs in Android
             // Simulator.
             // so in simulator, this line will not be run.
-            if (isSimulator())
-                sensorManager = null;
-            else
-                sensorManager = (SensorManager) contextWR.get()
-                        .getSystemService(Context.SENSOR_SERVICE);
-            CobubLog.i(UmsConstants.LOG_TAG, DeviceInfo.class, "getGravityAvailable()");
-            return sensorManager != null;
+            return !isSimulator();
         } catch (Exception e) {
             return false;
         }

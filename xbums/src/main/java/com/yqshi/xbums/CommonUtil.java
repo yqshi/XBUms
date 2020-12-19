@@ -53,6 +53,10 @@ class CommonUtil {
 
     public static void saveInfoToFile(String type, JSONObject info,
                                       Context context) {
+        //防止超时失败的处理,造成崩溃和内存泄露
+        if (context == null) {
+            return;
+        }
         JSONArray array = new JSONArray();
         array.put(info);
         saveInfoToFile(type, array, context);
