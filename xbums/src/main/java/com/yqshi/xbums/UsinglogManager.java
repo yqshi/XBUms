@@ -12,14 +12,21 @@
 package com.yqshi.xbums;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.yqshi.xbums.constants.UmsConstants;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+
 class UsinglogManager {
     private String session_id = "";
+    /**
+     * startTime,统计每个页面开始时间的map集合
+     */
+    private final HashMap<String, Long> startTimeMap = new HashMap<>();
 
     public UsinglogManager(Context context) {
     }
@@ -51,8 +58,6 @@ class UsinglogManager {
 
     public void judgeSession(final Context context) {
         CobubLog.i(UmsConstants.LOG_TAG, UsinglogManager.class, "Call onResume()");
-        AccessManager accessManager = new AccessManager(context);
-        accessManager.postAccessData();
         try {
             if (CommonUtil.isNewSession(context)) {
                 session_id = CommonUtil.generateSession(context);
@@ -70,7 +75,16 @@ class UsinglogManager {
      */
     public void onResume(final Context context) {
         judgeSession(context);
-        CommonUtil.savePageName(context, CommonUtil.getActivityName(context));
+        String pageName = CommonUtil.getActivityName(context);
+        if (!TextUtils.isEmpty(pageName)) {
+            CommonUtil.savePageName(context, pageName);
+            synchronized (this.startTimeMap) {
+                this.startTimeMap.put(pageName, System.currentTimeMillis());
+            }
+        }
+
+        AccessManager accessManager = new AccessManager(context);
+        accessManager.postAccessData();
     }
 
     /**
@@ -81,17 +95,29 @@ class UsinglogManager {
      */
     public void onFragmentResume(final Context context, String pageName) {
         judgeSession(context);
-        CommonUtil.savePageName(context, pageName);
+        if (!TextUtils.isEmpty(pageName)) {
+            CommonUtil.savePageName(context, pageName);
+            synchronized (this.startTimeMap) {
+                this.startTimeMap.put(pageName, System.currentTimeMillis());
+            }
+        }
+        AccessManager accessManager = new AccessManager(context);
+        accessManager.postAccessData();
     }
 
     public void onPause(final Context context) {
         CobubLog.i(UmsConstants.LOG_TAG, UsinglogManager.class, "Call onPause()");
 
-        SharedPrefUtil sp = new SharedPrefUtil(context);
-        String pageName = sp.getValue("CurrentPage", CommonUtil.getActivityName(context));
+        String pageName = CommonUtil.getActivityName(context);
+        CobubLog.i(UmsConstants.LOG_TAG, UsinglogManager.class, "pageName--->" + pageName);
+        Long start;
+        synchronized (this.startTimeMap) {
+            start = (Long) this.startTimeMap.remove(pageName);
+        }
+        if (start == null) {
+            return;
+        }
 
-        long start = sp.getValue("session_save_time",
-                System.currentTimeMillis());
         String start_millis = CommonUtil.getFormatTime(start);
 
         long end = System.currentTimeMillis();
@@ -109,6 +135,37 @@ class UsinglogManager {
             CobubLog.e(UmsConstants.LOG_TAG, e);
         }
     }
+
+
+    public void onFragmentPause(final Context context, String pageName) {
+        CobubLog.i(UmsConstants.LOG_TAG, UsinglogManager.class, "Call onPause()");
+
+        Long start;
+        synchronized (this.startTimeMap) {
+            start = (Long) this.startTimeMap.remove(pageName);
+        }
+        if (start == null) {
+            return;
+        }
+
+        String start_millis = CommonUtil.getFormatTime(start);
+
+        long end = System.currentTimeMillis();
+        String end_millis = CommonUtil.getFormatTime(end);
+
+        String duration = end - start + "";
+        CommonUtil.saveSessionTime(context);
+
+        JSONObject info;
+        try {
+            info = prepareUsinglogJSON(context, start_millis, end_millis, duration,
+                    pageName);
+            CommonUtil.saveInfoToFile("activityInfo", info, context);
+        } catch (JSONException e) {
+            CobubLog.e(UmsConstants.LOG_TAG, e);
+        }
+    }
+
 
     public void onWebPage(String pageName, final Context context) {
         SharedPrefUtil sp = new SharedPrefUtil(context);

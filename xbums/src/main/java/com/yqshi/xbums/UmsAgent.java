@@ -274,6 +274,35 @@ public class UmsAgent {
         handler.post(thread);
     }
 
+
+    /**
+     * 在Fragment的生命周期函数{@link #onPause(Context)}中调用
+     *
+     * @param context
+     */
+    public static void onFragmentPause(Context context, final String pageName) {
+        if (!INIT) {
+            CobubLog.e(UmsConstants.LOG_TAG, UmsAgent.class, "sdk is not init!");
+            return;
+        }
+        updateContent(context);
+        if (timer != null) {
+            timer.cancel();
+        }
+
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                CobubLog.i(UmsConstants.LOG_TAG, UmsAgent.class, "Call onPause()");
+                if (usinglogManager == null)
+                    usinglogManager = new UsinglogManager(contextWR.get());
+                usinglogManager.onFragmentPause(contextWR.get(), pageName);
+            }
+        });
+        handler.post(thread);
+    }
+
+
     /**
      * Call this function to send the uncatched crash exception stack
      * information to server
